@@ -1,0 +1,21 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+  padding-top: 20px;
+}
+
+footer {
+  width: 100%;
+}
+
+.container-custom {
+  padding-left: 60px;
+  padding-right: 60px;
+}

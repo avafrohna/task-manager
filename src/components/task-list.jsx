@@ -1,30 +1,29 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function TaskListPage() {
+  const [tasks, setTasks] = useState([]);
   const [error, setError] = useState(null);
 
-  const tasks = [
-    { id: 1, title: "Sample Task 1", status: "In Progress" },
-    { id: 2, title: "Sample Task 2", status: "To Do" },
-  ];
-
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchTasks = async () => {
       try {
-        // get tasks
+        const response = await axios.get('http://localhost:4000/api/tasks');
+        setTasks(response.data);
       } 
       catch (err) {
         setError(`Error fetching projects: ${err.message}`);
       }
     };
-  
-    fetchProjects();
+
+    fetchTasks();
   }, []);
 
   const deleteProjects = async (id) => {
     try {
-      // delete task
+      await axios.delete(`http://localhost:4000/api/tasks/${id}`);
+      setTasks(tasks.filter(task => task.id !== id));
     } 
     catch (err) {
       setError(`Error deleting project: ${err.message}`);

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-function LoginPage() {
+function LandingPage() {
   return (
     <div id="root">
 
@@ -19,4 +19,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default LandingPage;

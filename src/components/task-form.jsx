@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function TaskFormPage() {
   const { taskID } = useParams();
@@ -15,11 +16,10 @@ function TaskFormPage() {
 
   useEffect(() => {
     if (editMode) {
-      const fetchProjectData = async () => {
+      const fetchTaskData = async () => {
         try {
-          const task = [
-            { id: 1, title: "Sample Task 1", status: "In Progress" },
-          ];
+          const response = await axios.get(`http://localhost:4000/api/tasks/${taskID}`);
+          const task = response.data;
           setFormData({
             title: task[0].title,
             description: task[0].description || '',
@@ -30,7 +30,7 @@ function TaskFormPage() {
           setError(`Error fetching task: ${err.message}`);
         }
       };
-      fetchProjectData();
+      fetchTaskData();
     }
   }, []);
 
@@ -47,10 +47,10 @@ function TaskFormPage() {
   
     try {
       if (editMode) {
-        // edit task
+        await axios.put(`http://localhost:4000/api/tasks/${taskID}`, formData);
       } 
       else {
-        // create task
+        await axios.post('http://localhost:4000/api/tasks', formData);
       }
       navigate('/list-tasks');
     } 

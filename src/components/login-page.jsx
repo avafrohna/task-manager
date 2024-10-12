@@ -1,19 +1,35 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // Add login logic later (e.g., Firebase Auth)
-    console.log("Logging in with:", email, password);
+
+    try {
+      const response = await axios.post('http://localhost:4000/api/login', {
+        email,
+        password
+      });
+
+      navigate('/list-tasks');
+    } 
+    catch (err) {
+      setError(err.response ? err.response.data.error : 'Error logging in');
+    }
   };
 
   return (
     <div id="root">
 
       <h2>Login</h2>
+
+      {error && <p className="text-danger">{error}</p>}
       
       <form onSubmit={handleLogin}>
         <div className="form-group">

@@ -3,69 +3,151 @@ const mysql = require('mysql2');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const app = express();
+const cors = require('cors');
+
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true,
+}));
 
 app.use(express.json());
 
 const pool = mysql.createPool({
   host: 'localhost',
   user: 'root',
-  password: 'password', 
+  password: '5253', 
   database: 'task_manager',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
 });
 
-app.post('/api/register', async (req, res) => {
-  const { email, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-  pool.query(
-    'INSERT INTO users (email, password) VALUES (?, ?)',
-    [email, hashedPassword],
-    (err, results) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.status(201).json({ id: results.insertId, email });
+  if (!token) return res.status(401).json({ error: 'Token required' });
+
+  jwt.verify(token, 'your_jwt_secret', (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Token invalid' });
     }
-  );
+    req.user = user;
+    next();
+  });
+};
+
+app.post('/api/register', async (req, res) => {
+  const { firstname, lastname, email, password } = req.body;
+
+  pool.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: 'Database query failed: ' + err.message });
+    }
+    if (results && results.length > 0) {
+      return res.status(400).json({ error: 'Email already in use' });
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      pool.query(
+        'INSERT INTO users (firstname, lastname, email, password) VALUES (?, ?, ?, ?)',
+        [firstname, lastname, email, hashedPassword],
+        (err, results) => {
+          if (err) {
+            return res.status(500).json({ error: err.message });
+          }
+          res.status(201).json({ id: results.insertId, firstname, lastname, email });
+        }
+      );
+    } 
+    catch (error) {
+      res.status(500).json({ error: 'Error registering user: ' + error.message });
+    }
+  });
 });
 
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   
-  pool.query(
-    'SELECT * FROM users WHERE email = ?', 
-    [email], 
-    async (err, results) => {
-      if (err) return res.status(500).json({ error: err.message });
+  pool.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
   
     const user = results[0];
-      if (user && (await bcrypt.compare(password, user.password))) {
-        res.json({ message: 'Login successful' });
-      } 
-      else {
-        res.status(400).json({ error: 'Invalid email or password' });
+    if (user && (await bcrypt.compare(password, user.password))) {
+      const token = jwt.sign({ id: user.id }, 'your_jwt_secret', { expiresIn: '1h' });
+      res.json({ message: 'Login successful', token });
+    } 
+    else {
+      res.status(400).json({ error: 'Invalid email or password' });
+    }
+  });
+});
+
+app.get('/api/user', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+
+  pool.query('SELECT firstname, lastname, email FROM users WHERE id = ?', [userId], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(results[0]);
+  });
+});
+
+app.get('/api/tasks/progress', authenticateToken, (req, res) => {
+  const userId = req.user.id;
+
+  pool.query(
+    'SELECT COUNT(*) AS total, SUM(CASE WHEN status = "Finished" THEN 1 ELSE 0 END) AS completed FROM tasks WHERE user_id = ?',
+    [userId],
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
       }
+      const { total, completed } = results[0];
+      res.json({ total, completed });
     }
   );
 });
 
-app.get('/api/tasks', (req, res) => {
+app.get('/api/tasks', authenticateToken, (req, res) => {
   const userId = req.user.id;
 
   pool.query('SELECT * FROM tasks WHERE user_id = ?', [userId], (err, results) => {
     if (err) {
-    return res.status(500).json({ error: err.message });
+      return res.status(500).json({ error: err.message });
     }
     res.json(results);
   });
 });
 
-app.post('/api/tasks', (req, res) => {
+app.get('/api/tasks/:id', authenticateToken, (req, res) => {
+  const { id } = req.params;
+  const userId = req.user.id;
+
+  pool.query(
+    'SELECT * FROM tasks WHERE id = ? AND user_id = ?', 
+    [id, userId], 
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'Task not found' });
+      }
+      res.json(results[0]);
+    }
+  );
+});
+
+app.post('/api/tasks', authenticateToken, (req, res) => {
   const { title, description, status } = req.body;
-  const userId = req.user.id; 
+  const userId = req.user.id;
 
   pool.query(
     'INSERT INTO tasks (title, description, status, user_id) VALUES (?, ?, ?, ?)',

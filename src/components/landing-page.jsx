@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 function LandingPage() {
   return (
     <div id="root">
-
       <div>
         <h1 className="display-4 text-center mt-5">Welcome to Task Manager!</h1>
         <p className="text-center mt-3 fs-5">Create and manage project tasks</p>

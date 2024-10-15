@@ -1,12 +1,15 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import Header from './header';
 
 function TaskFormPage() {
   const { taskID } = useParams();
   const editMode = Boolean(taskID); 
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  console.log(editMode);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -18,12 +21,19 @@ function TaskFormPage() {
     if (editMode) {
       const fetchTaskData = async () => {
         try {
-          const response = await axios.get(`http://localhost:4000/api/tasks/${taskID}`);
+          const token = localStorage.getItem('token');
+          const response = await axios.get(
+            `http://localhost:4000/api/tasks/${taskID}`,
+            {
+              headers: { Authorization: `Bearer ${token}` }
+            }
+          );
+          
           const task = response.data;
           setFormData({
-            title: task[0].title,
-            description: task[0].description || '',
-            status: task[0].status,
+            title: task.title,
+            description: task.description || '',
+            status: task.status,
           });
         }
         catch (err) {
@@ -32,7 +42,7 @@ function TaskFormPage() {
       };
       fetchTaskData();
     }
-  }, []);
+  }, [editMode, taskID]);
 
   const editForm = (e) => {
     const { name, value, type, checked } = e.target;
@@ -50,7 +60,15 @@ function TaskFormPage() {
         await axios.put(`http://localhost:4000/api/tasks/${taskID}`, formData);
       } 
       else {
-        await axios.post('http://localhost:4000/api/tasks', formData);
+        const token = localStorage.getItem('token');
+
+        await axios.post(
+          'http://localhost:4000/api/tasks',
+          formData,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
       }
       navigate('/list-tasks');
     } 
@@ -61,6 +79,7 @@ function TaskFormPage() {
 
   return (
     <div id="root">
+      <Header />
 
       <div className="container-custom mt-3">
         <h1> {editMode ? 'Edit Task' : 'Add Task'} </h1>

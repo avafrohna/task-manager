@@ -1,19 +1,49 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import Header from './header';
 
 function TaskListPage() {
   const [tasks, setTasks] = useState([]);
   const [error, setError] = useState(null);
+  const [progress, setProgress] = useState({ total: 0, completed: 0 });
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:4000/api/tasks/progress', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProgress(response.data); 
+      } 
+      catch (err) {
+        setError('Error fetching task progress');
+      }
+    };
+
+    fetchProgress();
+  }, []);
+
+  const progressPercentage = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/api/tasks');
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+          throw new Error('No token found, please login again.');
+        }
+
+        const response = await axios.get('http://localhost:4000/api/tasks', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
         setTasks(response.data);
       } 
       catch (err) {
-        setError(`Error fetching projects: ${err.message}`);
+        setError(`Error fetching projects: ${err.response?.data?.error || err.message}`);
       }
     };
 
@@ -38,8 +68,9 @@ function TaskListPage() {
   };
 
   return (
-    <div id="root">
-  
+    <div id="tasks">
+      <Header />
+
       <div className="container-custom mt-3">
         <h1 className=''>
           Tasks
@@ -50,6 +81,26 @@ function TaskListPage() {
             <button className="btn btn-primary">Add Task</button>
           </Link>
         </div>
+
+        <br></br>
+        
+        <h3>Progress: </h3>
+        <div className="progress">
+          <div
+            className="progress-bar"
+            role="progressbar"
+            style={{ width: `${progressPercentage}%` }}
+            aria-valuenow={progressPercentage}
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+            {Math.round(progressPercentage)}%
+          </div>
+        </div>
+
+        <p>
+          {progress.completed} out of {progress.total} tasks completed
+        </p>
 
         {error && <p className="text-danger">{error}</p>}
       

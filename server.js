@@ -95,7 +95,10 @@ app.get('/api/user', authenticateToken, (req, res) => {
     if (results.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json(results[0]);
+
+    const user = results[0];
+    user.greeting = `Hi, ${user.firstname}! How are you?`;
+    res.json(user);
   });
 });
 

@@ -11,7 +11,6 @@ function ProfilePage() {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem('token');
-
         if (!token) {
           throw new Error('No token found, please login again.');
         }
@@ -19,7 +18,6 @@ function ProfilePage() {
         const response = await axios.get('http://localhost:4000/api/user', {
           headers: { Authorization: `Bearer ${token}` }
         });
-
         setUser(response.data);
       } 
       catch (err) {

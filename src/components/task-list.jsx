@@ -31,7 +31,6 @@ function TaskListPage() {
     const fetchTasks = async () => {
       try {
         const token = localStorage.getItem('token');
-
         if (!token) {
           throw new Error('No token found, please login again.');
         }
@@ -39,7 +38,6 @@ function TaskListPage() {
         const response = await axios.get('http://localhost:4000/api/tasks', {
           headers: { Authorization: `Bearer ${token}` }
         });
-
         setTasks(response.data);
       } 
       catch (err) {
@@ -114,7 +112,7 @@ function TaskListPage() {
                       {cutOffText(task.title, 30)}
                       {<button className="btn btn-success ms-3">Status: {task.status}</button>}
                     </div>
-                    <div>{cutOffText(task.description, 110)}</div>
+                    <div>{cutOffText(task.description, 90)}</div>
                   </td>
                   <td className="text-end">
                     <Link to={`/edit-task/${task.id}`}>

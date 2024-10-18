@@ -14,16 +14,18 @@ const Register = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/register`, {
+      const response = await axios.post('/api/register', {
         firstname,
         lastname,
         email,
         password,
       });
 
+      console.log('Registration response:', response);
       navigate('/login');
     } 
     catch (err) {
+      console.error('Registration error:', err);
       setError(err.response ? err.response.data.error : 'Error registering');
     }
   };

@@ -15,7 +15,7 @@ function ProfilePage() {
           throw new Error('No token found, please login again.');
         }
 
-        const response = await axios.get('http://localhost:4000/api/user', {
+        const response = await axios.get('/api/user', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUser(response.data);

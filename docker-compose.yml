@@ -7,12 +7,14 @@ services:
     image: myapp_frontend:latest
     ports:
       - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://myapp_backend:4000
     deploy:
       mode: replicated
       replicas: 4
       restart_policy:
         condition: on-failure
-    networks: 
+    networks:
       - app-network
 
   backend:
@@ -22,16 +24,17 @@ services:
     ports:
       - "4000:4000"
     environment:
-      DATABASE_HOST: db
-      DATABASE_USER: root
-      DATABASE_PASSWORD: 5253
-      DATABASE_NAME: task_manager
+      - FRONTEND_URL=http://myapp_frontend
+      - DATABASE_HOST=db
+      - DATABASE_USER=root
+      - DATABASE_PASSWORD=5253
+      - DATABASE_NAME=task_manager
     deploy:
       mode: replicated
       replicas: 2
       restart_policy:
         condition: on-failure
-    networks: 
+    networks:
       - app-network
 
   db:
@@ -42,14 +45,14 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: 5253
-      MYSQL_DATABASE: task_manager
+      - MYSQL_ROOT_PASSWORD=5253
+      - MYSQL_DATABASE=task_manager
     deploy:
       mode: replicated
       replicas: 1
       restart_policy:
         condition: on-failure
-    networks: 
+    networks:
       - app-network
 
 volumes:

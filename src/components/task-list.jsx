@@ -12,7 +12,7 @@ function TaskListPage() {
     const fetchProgress = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:4000/api/tasks/progress', {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks/progress`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProgress(response.data); 
@@ -35,7 +35,7 @@ function TaskListPage() {
           throw new Error('No token found, please login again.');
         }
 
-        const response = await axios.get('http://localhost:4000/api/tasks', {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setTasks(response.data);
@@ -50,7 +50,7 @@ function TaskListPage() {
 
   const deleteProjects = async (id) => {
     try {
-      await axios.delete(`http://localhost:4000/api/tasks/${id}`);
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/tasks/${id}`);
       setTasks(tasks.filter(task => task.id !== id));
     }
     catch (err) {

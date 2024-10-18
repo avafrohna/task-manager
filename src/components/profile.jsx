@@ -19,11 +19,9 @@ function ProfilePage() {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/user`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        console.log('User data fetched:', response.data);
         setUser(response.data);
       } 
       catch (err) {
-        console.error('Error fetching user data:', err);
         setError(`Error fetching user: ${err.response?.data?.error || err.message}`);
       }
     };

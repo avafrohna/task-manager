@@ -11,18 +11,11 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-  origin: 'http://localhost:30002',
+  origin: 'http://127.0.0.1:53489',   //'http://34.30.173.133:3000',
   credentials: true,
 }));
 
 app.use(express.json());
-
-console.log('Database Config:', {
-  host: process.env.DATABASE_HOST,
-  user: process.env.DATABASE_USER,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
-});
 
 const pool = mysql.createPool({
   host: process.env.DATABASE_HOST,
@@ -38,13 +31,11 @@ const pool = mysql.createPool({
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  console.log('Auth Token:', token);
 
   if (!token) return res.status(401).json({ error: 'Token required' });
 
   jwt.verify(token, 'your_jwt_secret', (err, user) => {
     if (err) {
-      console.error('JWT Verification Error:', err);
       return res.status(403).json({ error: 'Token invalid' });
     }
     req.user = user;
@@ -54,15 +45,12 @@ const authenticateToken = (req, res, next) => {
 
 app.post('/api/register', async (req, res) => {
   const { firstname, lastname, email, password } = req.body;
-  console.log('Registering user:', email);
 
   pool.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
     if (err) {
-      console.error('Error in SELECT query:', err);
       return res.status(500).json({ error: 'Database query failed: ' + err.message });
     }
     if (results && results.length > 0) {
-      console.log('Email already in use:', email);
       return res.status(400).json({ error: 'Email already in use' });
     }
 
@@ -73,7 +61,6 @@ app.post('/api/register', async (req, res) => {
         [firstname, lastname, email, hashedPassword],
         (err, results) => {
           if (err) {
-            console.error('Error in INSERT query:', err);
             return res.status(500).json({ error: err.message });
           }
           console.log('User registered successfully:', email);
@@ -114,10 +101,7 @@ app.get('/api/user', authenticateToken, (req, res) => {
     if (results.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
-
-    const user = results[0];
-    user.greeting = `Hi, ${user.firstname}! How are you?`;
-    res.json(user);
+    res.json(results[0]);
   });
 });
 

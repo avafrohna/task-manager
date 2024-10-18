@@ -17,22 +17,17 @@ function TaskListPage() {
         if (!token) {
           throw new Error('No token found, please login again.');
         }
-
-        console.log('Fetching task progress...');
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks/progress`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProgress(response.data);
-        console.log('Task progress fetched:', response.data);
       } 
       catch (err) {
-        console.error('Error fetching task progress:', err);
         setError(`Error fetching task progress: ${err.response?.data?.error || err.message}`);
       }
     };
-
     fetchProgress();
-  }, [tasks]); //only thing i changed please don't be the problem.
+  }, [tasks]);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -41,35 +36,27 @@ function TaskListPage() {
         if (!token) {
           throw new Error('No token found, please login again.');
         }
-
-        console.log('Fetching tasks...');
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setTasks(response.data);
-        console.log('Tasks fetched:', response.data);
       } 
       catch (err) {
-        console.error('Error fetching tasks:', err);
         setError(`Error fetching tasks: ${err.response?.data?.error || err.message}`);
       }
     };
-
     fetchTasks();
   }, []);
 
   const deleteProjects = async (id) => {
     try {
-      console.log(`Deleting task with ID: ${id}`);
       const token = localStorage.getItem('token');
       await axios.delete(`${process.env.REACT_APP_API_URL}/api/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTasks(tasks.filter(task => task.id !== id));
-      console.log(`Task with ID ${id} deleted successfully`);
     } 
     catch (err) {
-      console.error('Error deleting task:', err);
       setError(`Error deleting task: ${err.response?.data?.error || err.message}`);
     }
   };

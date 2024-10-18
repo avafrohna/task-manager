@@ -9,9 +9,6 @@ function TaskFormPage() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  console.log('Edit mode:', editMode);
-  console.log('Task ID:', taskID);
-
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -26,8 +23,6 @@ function TaskFormPage() {
           if (!token) {
             throw new Error('No token found, please login again.');
           }
-
-          console.log('Fetching data for task ID:', taskID);
           const response = await axios.get(
             `${process.env.REACT_APP_API_URL}/api/tasks/${taskID}`,
             {
@@ -36,7 +31,6 @@ function TaskFormPage() {
           );
           
           const task = response.data;
-          console.log('Fetched task data:', task);
           setFormData({
             title: task.title,
             description: task.description || '',
@@ -44,7 +38,6 @@ function TaskFormPage() {
           });
         }
         catch (err) {
-          console.error('Error fetching task:', err);
           setError(`Error fetching task: ${err.response?.data?.error || err.message}`);
         }
       };
@@ -58,7 +51,6 @@ function TaskFormPage() {
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
     });
-    console.log('Form data updated:', formData);
   };
 
   const submit = async (e) => {
@@ -72,7 +64,6 @@ function TaskFormPage() {
       }
 
       if (editMode) {
-        console.log('Updating task:', formData);
         await axios.put(
           `${process.env.REACT_APP_API_URL}/api/tasks/${taskID}`, 
           formData, 
@@ -80,10 +71,8 @@ function TaskFormPage() {
             headers: { Authorization: `Bearer ${token}` }
           }
         );
-        console.log('Task updated successfully');
       } 
       else {
-        console.log('Creating new task:', formData);
         await axios.post(
           `${process.env.REACT_APP_API_URL}/api/tasks`, 
           formData, 
@@ -91,12 +80,10 @@ function TaskFormPage() {
             headers: { Authorization: `Bearer ${token}` }
           }
         );
-        console.log('New task created successfully');
       }
       navigate('/list-tasks');
-    } 
+    }
     catch (err) {
-      console.error('Error saving task:', err);
       setError(`Error saving tasks: ${err.response?.data?.error || err.message}`);
     }
   };

@@ -28,18 +28,32 @@ spec:
           - name: DATABASE_NAME
             value: "task_manager"
           - name: FRONTEND_URL
-            value: "http://localhost:30002"
+            value: "http://192.168.49.2:32325" # port "http://34.30.173.133:3000"
 
 ---
+# GCP
 apiVersion: v1
 kind: Service
 metadata:
   name: backend
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
     - port: 4000
       targetPort: 4000
-      nodePort: 30001
   selector:
     app: backend
+
+# Minikube
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: backend
+#spec:
+#  type: NodePort
+#  ports:
+#    - port: 4000
+#      targetPort: 4000
+#      nodePort: 32306
+#  selector:
+#    app: backend

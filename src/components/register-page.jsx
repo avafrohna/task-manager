@@ -16,11 +16,7 @@ const Register = () => {
     setLoading(true);
     setError(null);
 
-    console.log('API URL:', process.env.REACT_APP_API_URL);
-
     try {
-      console.log('Attempting registration with:', { firstname, lastname, email });
-
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/register`, {
         firstname,
         lastname,
@@ -29,11 +25,9 @@ const Register = () => {
       });
 
       console.log('Registration successful:', response.data);
-
       navigate('/login');
     } 
     catch (err) {
-      console.error('Registration error:', err);
       setError(err.response ? err.response.data.error : 'Error registering');
     } 
     finally {

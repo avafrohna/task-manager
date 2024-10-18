@@ -23,7 +23,7 @@ function TaskFormPage() {
         try {
           const token = localStorage.getItem('token');
           const response = await axios.get(
-            `/api/tasks/${taskID}`,
+            `${process.env.REACT_APP_API_URL}/api/tasks/${taskID}`,
             {
               headers: { Authorization: `Bearer ${token}` }
             }
@@ -57,13 +57,13 @@ function TaskFormPage() {
   
     try {
       if (editMode) {
-        await axios.put(`/api/tasks/${taskID}`, formData);
+        await axios.put(`${process.env.REACT_APP_API_URL}/api/tasks/${taskID}`, formData);
       } 
       else {
         const token = localStorage.getItem('token');
 
         await axios.post(
-          '/api/tasks',
+          `${process.env.REACT_APP_API_URL}/api/tasks`,
           formData,
           {
             headers: { Authorization: `Bearer ${token}` }

@@ -1,0 +1,60 @@
+version: '3.3'
+
+services:
+  frontend:
+    depends_on:
+      - backend
+    image: myapp_frontend:latest
+    ports:
+      - "3000:3000"
+    deploy:
+      mode: replicated
+      replicas: 4
+      restart_policy:
+        condition: on-failure
+    networks: 
+      - app-network
+
+  backend:
+    depends_on:
+      - db
+    image: myapp_backend:latest
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USER: root
+      DATABASE_PASSWORD: 5253
+      DATABASE_NAME: task_manager
+    deploy:
+      mode: replicated
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+    networks: 
+      - app-network
+
+  db:
+    image: mysql:8
+    volumes:
+      - database:/var/lib/mysql
+      - ./data-tables.sql:/docker-entrypoint-initdb.d/data-tables.sql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 5253
+      MYSQL_DATABASE: task_manager
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    networks: 
+      - app-network
+
+volumes:
+  database: {}
+
+networks:
+  app-network:
+    driver: overlay

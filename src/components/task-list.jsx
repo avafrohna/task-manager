@@ -16,14 +16,14 @@ function TaskListPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProgress(response.data); 
-      } 
+      }
       catch (err) {
         setError('Error fetching task progress');
       }
     };
 
     fetchProgress();
-  }, []);
+  }, [tasks]);
 
   const progressPercentage = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
 
@@ -52,7 +52,7 @@ function TaskListPage() {
     try {
       await axios.delete(`http://localhost:4000/api/tasks/${id}`);
       setTasks(tasks.filter(task => task.id !== id));
-    } 
+    }
     catch (err) {
       setError(`Error deleting project: ${err.message}`);
     }

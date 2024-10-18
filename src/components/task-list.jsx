@@ -32,7 +32,7 @@ function TaskListPage() {
     };
 
     fetchProgress();
-  }, [tasks]);
+  }, [tasks]); //only thing i changed please don't be the problem.
 
   useEffect(() => {
     const fetchTasks = async () => {

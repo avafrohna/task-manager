@@ -14,16 +14,21 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     setError(null); 
+    console.log('Logging in with email:', email);
 
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/login`, { email, password });
+      console.log('Login successful, response data:', response.data);
       const token = response.data.token;
       localStorage.setItem('token', token);
 
       navigate('/list-tasks');
     } 
     catch (err) {
+      console.error('Login failed:', err);
       setError(err.response ? err.response.data.error : 'Error logging in');
+    } 
+    finally {
       setLoading(false);
     }
   };

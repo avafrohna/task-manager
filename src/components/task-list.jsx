@@ -8,24 +8,31 @@ function TaskListPage() {
   const [error, setError] = useState(null);
   const [progress, setProgress] = useState({ total: 0, completed: 0 });
 
+  const progressPercentage = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
+
   useEffect(() => {
     const fetchProgress = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          throw new Error('No token found, please login again.');
+        }
+
+        console.log('Fetching task progress...');
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks/progress`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setProgress(response.data); 
-      }
+        setProgress(response.data);
+        console.log('Task progress fetched:', response.data);
+      } 
       catch (err) {
-        setError('Error fetching task progress');
+        console.error('Error fetching task progress:', err);
+        setError(`Error fetching task progress: ${err.response?.data?.error || err.message}`);
       }
     };
 
     fetchProgress();
   }, [tasks]);
-
-  const progressPercentage = progress.total > 0 ? (progress.completed / progress.total) * 100 : 0;
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -35,13 +42,16 @@ function TaskListPage() {
           throw new Error('No token found, please login again.');
         }
 
+        console.log('Fetching tasks...');
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setTasks(response.data);
+        console.log('Tasks fetched:', response.data);
       } 
       catch (err) {
-        setError(`Error fetching projects: ${err.response?.data?.error || err.message}`);
+        console.error('Error fetching tasks:', err);
+        setError(`Error fetching tasks: ${err.response?.data?.error || err.message}`);
       }
     };
 
@@ -50,11 +60,17 @@ function TaskListPage() {
 
   const deleteProjects = async (id) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/tasks/${id}`);
+      console.log(`Deleting task with ID: ${id}`);
+      const token = localStorage.getItem('token');
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/tasks/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setTasks(tasks.filter(task => task.id !== id));
-    }
+      console.log(`Task with ID ${id} deleted successfully`);
+    } 
     catch (err) {
-      setError(`Error deleting project: ${err.message}`);
+      console.error('Error deleting task:', err);
+      setError(`Error deleting task: ${err.response?.data?.error || err.message}`);
     }
   };
 
@@ -70,9 +86,7 @@ function TaskListPage() {
       <Header />
 
       <div className="container-custom mt-3">
-        <h1 className=''>
-          Tasks
-        </h1>
+        <h1>Tasks</h1>
 
         <div className="mt-4">
           <Link to="/add-task">
@@ -80,9 +94,9 @@ function TaskListPage() {
           </Link>
         </div>
 
-        <br></br>
-        
-        <h3>Progress: </h3>
+        <br />
+
+        <h3>Progress:</h3>
         <div className="progress">
           <div
             className="progress-bar"
@@ -95,13 +109,10 @@ function TaskListPage() {
             {Math.round(progressPercentage)}%
           </div>
         </div>
-
-        <p>
-          {progress.completed} out of {progress.total} tasks completed
-        </p>
+        <p>{progress.completed} out of {progress.total} tasks completed</p>
 
         {error && <p className="text-danger">{error}</p>}
-      
+
         {tasks.length > 0 ? (
           <table className="table table-striped mt-4">
             <tbody>
@@ -120,7 +131,10 @@ function TaskListPage() {
                     </Link>
                     <button
                       className="btn btn-danger me-2"
-                      onClick={() => deleteProjects(task.id)}>Delete</button>
+                      onClick={() => deleteProjects(task.id)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -130,9 +144,8 @@ function TaskListPage() {
           <p>No tasks available.</p>
         )}
       </div>
-  
     </div>
-  );  
+  );
 }
 
 export default TaskListPage;

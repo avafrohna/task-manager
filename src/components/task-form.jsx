@@ -9,7 +9,8 @@ function TaskFormPage() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  console.log(editMode);
+  console.log('Edit mode:', editMode);
+  console.log('Task ID:', taskID);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -22,6 +23,11 @@ function TaskFormPage() {
       const fetchTaskData = async () => {
         try {
           const token = localStorage.getItem('token');
+          if (!token) {
+            throw new Error('No token found, please login again.');
+          }
+
+          console.log('Fetching data for task ID:', taskID);
           const response = await axios.get(
             `${process.env.REACT_APP_API_URL}/api/tasks/${taskID}`,
             {
@@ -30,6 +36,7 @@ function TaskFormPage() {
           );
           
           const task = response.data;
+          console.log('Fetched task data:', task);
           setFormData({
             title: task.title,
             description: task.description || '',
@@ -37,7 +44,8 @@ function TaskFormPage() {
           });
         }
         catch (err) {
-          setError(`Error fetching task: ${err.message}`);
+          console.error('Error fetching task:', err);
+          setError(`Error fetching task: ${err.response?.data?.error || err.message}`);
         }
       };
       fetchTaskData();
@@ -50,30 +58,46 @@ function TaskFormPage() {
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
     });
+    console.log('Form data updated:', formData);
   };
 
   const submit = async (e) => {
     e.preventDefault(); 
-  
-    try {
-      if (editMode) {
-        await axios.put(`${process.env.REACT_APP_API_URL}/api/tasks/${taskID}`, formData);
-      } 
-      else {
-        const token = localStorage.getItem('token');
+    setError(null);
 
-        await axios.post(
-          `${process.env.REACT_APP_API_URL}/api/tasks`,
-          formData,
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found, please login again.');
+      }
+
+      if (editMode) {
+        console.log('Updating task:', formData);
+        await axios.put(
+          `${process.env.REACT_APP_API_URL}/api/tasks/${taskID}`, 
+          formData, 
           {
             headers: { Authorization: `Bearer ${token}` }
           }
         );
+        console.log('Task updated successfully');
+      } 
+      else {
+        console.log('Creating new task:', formData);
+        await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/tasks`, 
+          formData, 
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
+        console.log('New task created successfully');
       }
       navigate('/list-tasks');
     } 
     catch (err) {
-      setError(`Error saving tasks: ${err.message}`);
+      console.error('Error saving task:', err);
+      setError(`Error saving tasks: ${err.response?.data?.error || err.message}`);
     }
   };
 
@@ -130,7 +154,7 @@ function TaskFormPage() {
             <p className="text-muted small">Select status of task.</p>
           </div>
 
-          <button type="submit" className="btn btn-success mb-4">Save Project</button>
+          <button type="submit" className="btn btn-success mb-4">Save Task</button>
         </form>
       </div>
 

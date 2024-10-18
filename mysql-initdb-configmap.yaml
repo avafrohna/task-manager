@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb
+data:
+  data-tables.sql: |
+    -- Your SQL initialization script here

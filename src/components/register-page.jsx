@@ -8,12 +8,19 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    console.log('API URL:', process.env.REACT_APP_API_URL);
 
     try {
+      console.log('Attempting registration with:', { firstname, lastname, email });
+
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/register`, {
         firstname,
         lastname,
@@ -21,12 +28,16 @@ const Register = () => {
         password,
       });
 
-      console.log('Registration response:', response);
+      console.log('Registration successful:', response.data);
+
       navigate('/login');
     } 
     catch (err) {
       console.error('Registration error:', err);
       setError(err.response ? err.response.data.error : 'Error registering');
+    } 
+    finally {
+      setLoading(false);
     }
   };
 
@@ -43,6 +54,7 @@ const Register = () => {
             value={firstname}
             onChange={(e) => setFirstName(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
 
@@ -54,6 +66,7 @@ const Register = () => {
             value={lastname}
             onChange={(e) => setLastName(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
 
@@ -65,6 +78,7 @@ const Register = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
 
@@ -76,10 +90,12 @@ const Register = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
-        <button type="submit" className="btn btn-primary mt-3">
-          Register
+
+        <button type="submit" className="btn btn-primary mt-3" disabled={loading}>
+          {loading ? 'Registering...' : 'Register'}
         </button>
       </form>
     </div>

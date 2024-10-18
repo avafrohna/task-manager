@@ -3,8 +3,8 @@ import LandingPage from './components/landing-page';
 import Login from './components/login-page';
 import TaskList from './components/task-list';
 import TaskForm from './components/task-form';
-import Register from './components/register-page'
-import Profile from './components/profile'
+import Register from './components/register-page';
+import Profile from './components/profile';
 
 function App() {
   return (

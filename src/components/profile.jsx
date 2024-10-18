@@ -4,13 +4,14 @@ import axios from 'axios';
 import Header from './header';
 
 function ProfilePage() {
-  const [user, setUser] = useState([]);
+  const [user, setUser] = useState({});
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const token = localStorage.getItem('token');
+        console.log('Fetched token:', token);
         if (!token) {
           throw new Error('No token found, please login again.');
         }
@@ -18,10 +19,12 @@ function ProfilePage() {
         const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/user`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        console.log('User data fetched:', response.data);
         setUser(response.data);
       } 
       catch (err) {
-        setError(`Error fetching projects: ${err.response?.data?.error || err.message}`);
+        console.error('Error fetching user data:', err);
+        setError(`Error fetching user: ${err.response?.data?.error || err.message}`);
       }
     };
 
@@ -33,9 +36,7 @@ function ProfilePage() {
       <Header />
       
       <div className="container-custom mt-3">
-        <h1>
-          User Profile
-        </h1>
+        <h1>User Profile</h1>
 
         {error && <p className="text-danger">{error}</p>}
       

@@ -5,12 +5,24 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const cors = require('cors');
 
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.url}`);
+  next();
+});
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL,
+  origin: 'http://localhost:30002',
   credentials: true,
 }));
 
 app.use(express.json());
+
+console.log('Database Config:', {
+  host: process.env.DATABASE_HOST,
+  user: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
+});
 
 const pool = mysql.createPool({
   host: process.env.DATABASE_HOST,
@@ -20,16 +32,19 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  debug: true,
 });
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
+  console.log('Auth Token:', token);
 
   if (!token) return res.status(401).json({ error: 'Token required' });
 
   jwt.verify(token, 'your_jwt_secret', (err, user) => {
     if (err) {
+      console.error('JWT Verification Error:', err);
       return res.status(403).json({ error: 'Token invalid' });
     }
     req.user = user;
@@ -39,25 +54,29 @@ const authenticateToken = (req, res, next) => {
 
 app.post('/api/register', async (req, res) => {
   const { firstname, lastname, email, password } = req.body;
+  console.log('Registering user:', email);
 
   pool.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
     if (err) {
+      console.error('Error in SELECT query:', err);
       return res.status(500).json({ error: 'Database query failed: ' + err.message });
     }
     if (results && results.length > 0) {
+      console.log('Email already in use:', email);
       return res.status(400).json({ error: 'Email already in use' });
     }
 
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
-
       pool.query(
         'INSERT INTO users (firstname, lastname, email, password) VALUES (?, ?, ?, ?)',
         [firstname, lastname, email, hashedPassword],
         (err, results) => {
           if (err) {
+            console.error('Error in INSERT query:', err);
             return res.status(500).json({ error: err.message });
           }
+          console.log('User registered successfully:', email);
           res.status(201).json({ id: results.insertId, firstname, lastname, email });
         }
       );
@@ -191,6 +210,6 @@ app.delete('/api/tasks/:id', (req, res) => {
   });
 });
 
-app.listen(4000, '0.0.0.0', () => {
+app.listen(4000, () => {
   console.log('Server running on port 4000');
 });

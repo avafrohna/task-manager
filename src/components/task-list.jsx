@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../axios';
 import Header from './header';
 
 function TaskListPage() {
@@ -17,9 +17,7 @@ function TaskListPage() {
         if (!token) {
           throw new Error('No token found, please login again.');
         }
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks/progress`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await api.get('/tasks/progress');
         setProgress(response.data);
       } 
       catch (err) {
@@ -36,9 +34,7 @@ function TaskListPage() {
         if (!token) {
           throw new Error('No token found, please login again.');
         }
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/tasks`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('/tasks');
         setTasks(response.data);
       } 
       catch (err) {
@@ -50,10 +46,7 @@ function TaskListPage() {
 
   const deleteProjects = async (id) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/tasks/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/tasks/${id}`);
       setTasks(tasks.filter(task => task.id !== id));
     } 
     catch (err) {

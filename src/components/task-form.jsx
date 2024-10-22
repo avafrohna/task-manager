@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../axios';
 import Header from './header';
 
 function TaskFormPage() {
@@ -23,12 +23,7 @@ function TaskFormPage() {
           if (!token) {
             throw new Error('No token found, please login again.');
           }
-          const response = await axios.get(
-            `${process.env.REACT_APP_API_URL}/api/tasks/${taskID}`,
-            {
-              headers: { Authorization: `Bearer ${token}` }
-            }
-          );
+          const response = await api.get(`/tasks/${taskID}`);
           
           const task = response.data;
           setFormData({
@@ -62,24 +57,13 @@ function TaskFormPage() {
       if (!token) {
         throw new Error('No token found, please login again.');
       }
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       if (editMode) {
-        await axios.put(
-          `${process.env.REACT_APP_API_URL}/api/tasks/${taskID}`, 
-          formData, 
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
+        await api.put(`/tasks/${taskID}`, formData);
       } 
       else {
-        await axios.post(
-          `${process.env.REACT_APP_API_URL}/api/tasks`, 
-          formData, 
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
+        await api.post('/tasks', formData);
       }
       navigate('/list-tasks');
     }

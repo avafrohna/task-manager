@@ -18,12 +18,8 @@ spec:
         imagePullPolicy: Never
         ports:
         - containerPort: 3000
-        env:
-        - name: REACT_APP_API_URL
-          value: "http://192.168.49.2:32306"  # port http://34.42.30.190:4000
         
 ---
-# GCP
 apiVersion: v1
 kind: Service
 metadata:
@@ -35,17 +31,3 @@ spec:
       targetPort: 3000
   selector:
     app: frontend
-
-# Minikube
-#apiVersion: v1
-#kind: Service
-#metadata:
-#  name: frontend
-#spec:
-#  type: NodePort
-#  ports:
-#    - port: 3000
-#      targetPort: 3000
-#      nodePort: 32325
-#  selector:
-#    app: frontend

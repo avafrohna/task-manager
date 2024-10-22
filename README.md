@@ -9,23 +9,31 @@ In the project directory, you can run:
 `npm start`
 
 ### Minikube
-    minikube ip
     minikube start
-    kubectl get nodes
+    minikube addons enable ingress
     eval $(minikube docker-env)
-    docker build -t myapp_backend:latest -f Dockerfile.backend .
-    docker build -t myapp_frontend:latest -f Dockerfile.frontend .
     kubectl apply -f mysql-pvc.yaml
-    kubectl get pvc
-    kubectl create configmap mysql-initdb --from-file=data-tables.sql
+    kubectl apply -f mysql-initdb-configmap.yaml
     kubectl apply -f db-deployment.yaml
+    kubectl get pods -l app=db --watch
+    
+    docker build -t myapp_backend -f Dockerfile.backend .
+    docker build -t myapp_frontend -f Dockerfile.frontend .
     kubectl apply -f backend-deployment.yaml
     kubectl apply -f frontend-deployment.yaml
-    kubectl get pods
-    http://localhost:30002
+    kubectl apply -f ingress.yaml
 
-    kubectl delete deployment –all
-    kubectl delete pods -l app=backend
+    minikube tunnel
+    minikube ip
+
+    kubectl delete deployment backend frontend
+    kubectl delete service backend frontend
+    kubectl delete ingress app-ingress
+    kubectl get pods
+    kubectl get services
+
+    http://127.0.0.1
+
 
 ### GCP
     cloud-computing-433102

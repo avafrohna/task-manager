@@ -11,7 +11,7 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-  origin: 'http://127.0.0.1:53489',   //'http://34.30.173.133:3000',
+  origin: true,
   credentials: true,
 }));
 

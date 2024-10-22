@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../axios';
 import Header from './header';
 
 function ProfilePage() {
@@ -16,9 +16,8 @@ function ProfilePage() {
           throw new Error('No token found, please login again.');
         }
 
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/user`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('/user');
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setUser(response.data);
       } 
       catch (err) {
